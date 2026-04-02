@@ -1,10 +1,8 @@
-package core.basesyntax;
+package core.basesyntax.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import core.basesyntax.model.FruitTransaction;
-import core.basesyntax.service.impl.ReportGeneratorImpl;
-import core.basesyntax.service.impl.ShopServiceImpl;
 import core.basesyntax.strategy.OperationHandler;
 import core.basesyntax.strategy.impl.BalanceOperation;
 import core.basesyntax.strategy.impl.OperationStrategyImpl;
@@ -14,19 +12,25 @@ import core.basesyntax.strategy.impl.SupplyOperation;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ReportGeneratorImplTest {
-    @Test
-    void getReportProducesSortedCsv() {
+    private static OperationStrategyImpl sharedStrategy;
+
+    @BeforeAll
+    static void setUp() {
         Map<FruitTransaction.Operation, OperationHandler> handlers = new HashMap<>();
         handlers.put(FruitTransaction.Operation.BALANCE, new BalanceOperation());
         handlers.put(FruitTransaction.Operation.SUPPLY, new SupplyOperation());
         handlers.put(FruitTransaction.Operation.RETURN, new ReturnOperation());
         handlers.put(FruitTransaction.Operation.PURCHASE, new PurchaseOperation());
+        sharedStrategy = new OperationStrategyImpl(handlers);
+    }
 
-        OperationStrategyImpl strategy = new OperationStrategyImpl(handlers);
-        ShopServiceImpl shopService = new ShopServiceImpl(strategy);
+    @Test
+    void getReportProducesSortedCsv() {
+        ShopServiceImpl shopService = new ShopServiceImpl(sharedStrategy);
 
         shopService.process(Arrays.asList(
                 new FruitTransaction(FruitTransaction.Operation.BALANCE, "banana", 5),
